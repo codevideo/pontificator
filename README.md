@@ -2,6 +2,8 @@
 
 Generate studio quality dictated audio files from books, articles, and blog posts.
 
+See an example of a dictated blog post [on one of Chris's blog posts](https://chrisfrew.in/blog/blazor-on-netlify-with-environment-variables/).
+
 ## Prerequisites
 
 If you are fine with using the built in text-to-speech software, you can skip this section. If you want to use a payed text-to-speech software, you will need to set up an account and get an API key. We currently support the following vendors:
