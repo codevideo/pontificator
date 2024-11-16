@@ -102,6 +102,14 @@ if __name__ == "__main__":
         print("Usage: python generate_audio.py file_to_chunk.txt")
         sys.exit(1)
 
+    # if second argument is "all", find all files with the word "chunk" in it and generate audio for each, then call combine_audio.py
+    if sys.argv[1] == "all":
+        for file in os.listdir("example"):
+            if "chunk" in file and file.endswith(".txt"):
+                generate_audio(f"example/{file}", force_overwrite=False)
+        os.system("python python/combine_audio.py example/blog-post-chunk")
+        sys.exit(0)
+
     file_to_chunk = sys.argv[1]
 
     generate_audio(file_to_chunk, force_overwrite=False)

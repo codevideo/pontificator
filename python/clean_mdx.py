@@ -55,7 +55,8 @@ def ordinal(day):
     return str(day) + suffix
 
 def transform_markdown(text):
-    # Find frontmatter
+    text_with_transformed_frontmatter = text
+    # Find frontmatter, if any
     frontmatter_match = re.search(r'---\n(.*?)\n---', text, flags=re.DOTALL)
     if frontmatter_match:
         frontmatter = frontmatter_match.group(1)
@@ -73,6 +74,16 @@ def remove_html_blocks(text):
     text_without_html = re.sub(html_block_pattern, '', text)
     
     return text_without_html
+
+def remove_links(text):
+    # regex and remove any []() or any ![]()
+    text_without_links = re.sub(r'!\[.*?\]\(.*?\)', '', text)  # Remove image links first
+    text_without_links = re.sub(r'\[.*?\]\(.*?\)', '', text_without_links)  # Remove regular links
+    text_without_links = re.sub(r'^[*-]\s+', '', text_without_links, flags=re.MULTILINE)  # Remove bullet points
+    text_without_links = re.sub(r'!+', '', text_without_links)  # Remove any remaining exclamation marks
+
+    return text_without_links
+
 
 def remove_imports(text):
     # if a line starts with 'import ', remove it

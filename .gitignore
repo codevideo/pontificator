@@ -1,6 +1,9 @@
 # environment
 .env
 
+# virtualenv
+venv
+
 # All artifacts in example folder
 example/*.mp3
 example/*.txt

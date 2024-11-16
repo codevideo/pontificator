@@ -17,6 +17,7 @@ If you are fine with using the built in text-to-speech software, you can skip th
 Activate your virtual environment and install the required packages:
 
 ```bash
+python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
