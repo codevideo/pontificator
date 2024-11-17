@@ -75,14 +75,27 @@ def remove_html_blocks(text):
     
     return text_without_html
 
-def remove_links(text):
-    # regex and remove any []() or any ![]()
-    text_without_links = re.sub(r'!\[.*?\]\(.*?\)', '', text)  # Remove image links first
-    text_without_links = re.sub(r'\[.*?\]\(.*?\)', '', text_without_links)  # Remove regular links
-    text_without_links = re.sub(r'^[*-]\s+', '', text_without_links, flags=re.MULTILINE)  # Remove bullet points
-    text_without_links = re.sub(r'!+', '', text_without_links)  # Remove any remaining exclamation marks
+import re
 
+import re
+
+def remove_links(text):
+    # Remove image links and captions
+    text_without_links = re.sub(r'!\[.*?\]\(.*?\)', '', text)
+    text_without_links = re.sub(r'!\[.*?\]', '', text_without_links)
+    # Remove regular links
+    text_without_links = re.sub(r'\[.*?\]\(.*?\)', '', text_without_links)
+    # Remove ASME citation links like [[number]](URL)
+    text_without_links = re.sub(r'\[\[\d+\]\]\(.*?\)', '', text_without_links)
+    # Remove bullet points
+    text_without_links = re.sub(r'^[*-]\s+', '', text_without_links, flags=re.MULTILINE)
+    # Remove lines starting with '!'
+    text_without_links = re.sub(r'^!.*', '', text_without_links, flags=re.MULTILINE)
+    # Remove any remaining exclamation marks
+    text_without_links = re.sub(r'!+', '', text_without_links)
     return text_without_links
+
+
 
 
 def remove_imports(text):
@@ -110,6 +123,9 @@ def remove_markdown_elements(text):
     
     # Remove _ from italic words
     text = re.sub(r'_(.*?)_', r'\1', text)
+
+    # Before removing headings, add a period at the end of the line with the full heading text
+    text = re.sub(r'^#+\s+(.*)', r'\1.', text, flags=re.MULTILINE)
     
     # Remove headings (#, ##, or ###)
     text = re.sub(r'^#+\s+', '', text, flags=re.MULTILINE)
@@ -147,6 +163,9 @@ if __name__ == "__main__":
 
     # Transform frontmatter
     filtered_content = transform_markdown(filtered_content)
+
+    # remove links
+    filtered_content = remove_links(filtered_content)
 
     # Save it to a txt file of the same name
     with open(input_file.replace('.mdx', '.txt'), 'w') as f:
