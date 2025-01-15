@@ -1,96 +1,52 @@
 
-## Why The Singularity Is Impossible — Or Rather, Why It’s Just a Bad Word In General
+## **LaTeX and pandoc: The Cryptic “Counter Too Large” Error**
 
-### Too many people not reading enough books and not understanding what they are arguing about.
+### A debugging-to-solution journey through LaTeX’s alphabetical limits!
 
-![Photo by Google DeepMind: [https://www.pexels.com/photo/an-artist-s-illustration-of-artificial-intelligence-ai-this-image-depicts-a-look-inside-how-ai-microchips-are-designed-it-was-created-by-champ-panupong-techawongthawon-as-part-of-the-v-17483848/](https://www.pexels.com/photo/an-artist-s-illustration-of-artificial-intelligence-ai-this-image-depicts-a-look-inside-how-ai-microchips-are-designed-it-was-created-by-champ-panupong-techawongthawon-as-part-of-the-v-17483848/)](https://cdn-images-1.medium.com/max/8000/1*OFY5cQChMigO-S4H0Lly6w.jpeg)
+![Experimenting with MacOS’s new “Image Playground”; Prompt: “A robot printing out large PDF documents”](https://cdn-images-1.medium.com/max/2048/1*BrzAEig8QHflxaaO54dSbA.png)
 
-Despite the inciting title, I don’t want to strawman this argument, so let’s pull the definition straight from every keyboard warrior’s best friend, Wikipedia:
+## **“Docs-as-code**”
 
-*The **technological singularity **— or simply the **singularity [**[1]](https://en.wikipedia.org/wiki/Technological_singularity#cite_note-1) — is a [hypothetical](https://en.wikipedia.org/wiki/Hypothetical) future point in time at which technological growth becomes uncontrollable and irreversible, resulting in unforeseeable consequences for [human civilization](https://en.wikipedia.org/wiki/Human_civilization). [[2]](https://en.wikipedia.org/wiki/Technological_singularity#cite_note-2)[[3]](https://en.wikipedia.org/wiki/Technological_singularity#cite_note-Singularity_hypotheses-3)*
+At our organization, I’m the product owner of a relatively large Pandoc project. Pandoc is a tool that can convert one document type to another, i.e. HTML to markdown, PDF to TXT, and everything in between. At our org, however, which does a lot of ISO-certified medical technology software (read: you need to write A LOT of documentation alongside your software), we use it primarily to convert markdown to LaTeX to generate nice PDFs for regulatory uses. The project has grown so much in size that the example PDF we generate, which has a chapter per illustrative example, has over 100 pages (we have many complex markdown table generators for things like software bill of materials, software license lists, and so on — we’re not physically writing that much!).
 
-The singularity was popularized by Ray Kurzweil, who claims it will occur in 2045.
+However, in the last week, I ran into quite a “fun” side effect that involved the internals of LaTeX itself — a bug that left me scratching my head for longer than most bugs I have encountered in all of 2024. And it’s only January… yeesh!
 
-There’s an entire subreddit dedicated to this word, with over 3 million members, awaiting this fated singularity moment, kinda like a religion. It’s a bit weird and creepy, to be honest.
+## The Bug
 
-I’m about to ruin their (and perhaps your) whole day.
+The error message appeared quite simple at first, but as we know, sometimes these “simple” errors are the most difficult to decipher:
 
-More of a visual learner? This picture essentially sums up my argument:
+Okay… so we’re getting Counter too large … but all the way down at line 5081 in the document, where we have… Section 1?!?!? I was stumped and laughing to myself, apparently, LaTeX can’t count higher than 1…
 
-![Courtesy of me.](https://cdn-images-1.medium.com/max/2000/1*gr2g10jrjchFoRW-jOpbbA.png)
+With some Googling and Stackoverflowing, I saw many posts that mentioned the fact that lettered sections can’t go above 26 (i.e. the letter Z) without custom LaTeX implementations. I kept ignoring these comments, marking them as irrelevant to our project because we were using numbered sections. For plain numbered sections in LaTeX, you can go up to 2147483647, or 2³¹-1, with no problem. Definitely a safe number even for our large PDF example!
 
-## Mental Masturbation
+So what was going on?
 
-After reading a few posts on this illustrious (read: sarcasm) singularity subreddit, I’m convinced the vast majority of posters and critical thinkers (read: clueless gamers) assume that the singularity will be some sort of instantaneous moment where afterward, god knows what is going to happen and we’ll never know because we’ll all be meat bags floating in some primordial soup (or maybe not exist at all, because, you know, the AI will become self-aware and start launching nukes… wait a second, I’ve seen this movie before). I argue this notion is like the start of a dream: you somehow “know” how you got there, but if you really think about it, you actually can’t explain at all how you got there! (Yes, tip of the hat to inception.)
+## The Aha Moment
 
-A “singularity” of this nature would require some sort of magic-level development in multiple areas of science: physics, biology, chemistry, and probably even a bit of math too. I also mentioned this in my other recent post, [*Why LLMs will never be AGI](https://chrisfrewin.medium.com/why-llms-will-never-be-agi-70335d452bd7)*. But seeing as there seems to be no shortage of overhyped AI hucksters, I’d figure I’d write another post to keep drilling the message home. (Not to mention that my last post of mine was quite popular 😉)
+I noticed a peculiar aspect of our document structure (at least from the last document that was successfully generated from our pipeline before everything started breaking). We had exactly 23 numbered chapters, and then an appendix with 3 sections… that started, curiously, at X (in LaTeX counter language, 24.), and had two further sections Y and Z, before the end of the document.
 
-In short, everyone is using the “singularity” as a crutch just to feel good — i.e. for whatever their mental agenda is — whether they use the singularity as an argument to claim that everyone will be equal, or that nobody will even exist anymore, it’s just a feel-good sentiment and since it makes me feel good, it's of course going to happen.
+That’s when I realized what was happening: the addition of my new *numbered *chapter (for the new feature I built) was the first one that would push the final appendix section to 27, or beyond “Z”. So in a way, I was just “lucky” and the first one to reach this chapter count limit by submitting a new example chapter.
 
-## Turned On Its Head — What if the Singularity *Already Happened*?
+I took a look at our existing appendix markdown to try to drill down even further to see what the heck was going on:
 
-If the singularity is just a matter of defining the moment when technological growth becomes uncontrollable, I could think of many points in time where this has already happened.
+Aha! The very first line already illustrates the issue:
 
-One could argue the invention of stone tools was the singularity — I mean, since that point in time technological improvements have been uncontrollable (farming, domestication of animals, currency, history, rest of civilization etc.).
+We were switching to alpha numbering, but without resetting LaTeX’s internal counter (no, apparently LaTeX won’t do it for you when you switch numbering types.)…
 
-But heck, why stop there? You could argue that stone tools are ultimately a result of us learning how to control fire! Or you know what, screw it! Perhaps the singularity was when cellular life occurred, or even the Big Bang itself! Each moment arguably (and rather easily) fits into our good ol’ Wikipedia definition of “singularity”. 
+## The Solution
 
-Also important to note here for any of these events, it’s not like the moment the first occurrence happened, it was *everywhere*. (When one caveman saw a tree struck by lightning and plucked off a burning branch, it’s likely not the case that a tribe 2000 miles away immediately had torches as well. When the very first cells came together in the ancient oceans, it’s not likely that the ocean was then instantaneously filled with multicellular life. I say *likely* because I obviously wasn’t there for any of those events. But somehow I feel like I’m correct in this line of thinking.)
+The fix was a one-liner. In our appendix markdown, we simply needed to reset the counter as the first line in the markdown:
 
-My point is that there will never be some paradigm-shifting instant when everything changes within a split second. Everything has always been changing all the time. Yeah, that’s a trite sentence, but think about it. Reality doesn’t work like a step function where one moment things are X and another moment they are Y. (I get it, if you’re chronically online and sit in front of a screen 18 hours a day, it sounds like I am lying. I assure you, as well as the authors of over 100 million+ published books throughout humanity's history, that this is not the case.)
+This is a powerful advantage of pandoc: while it’s fine to write plain markdown, you can also include standard LaTeX commands at any line in the markdown, and those will be picked up by pandoc during the conversion stage (at least when the conversion target is PDF). The addition of this \setcounter command started our appendices sectioning off fresh with the letter A. (I anyway thought it was awkward starting the appendix at the letter X!)
 
-## Time Perception
-
-Time, or at least our perception of it, has *everything* to do with what the singularity “is” (perhaps at this point you’re already questioning even what the singularity means — don’t worry, I’m not sure I know anymore either) If we argue that the “singularity” indeed was the formation of single cell life, well then the singularity has been going on for over 3 billion years, which even on a scale of the universe, is nearly 25% of the universe’s lifetime (so far). Not so instantaneous eh? The whole “AI” nonsense has gone through like 3 “winters” by now. Very strange…. almost as if each time we find more and more truths about how complex our reality really is…
-
-It’s so, *so*, easy to forget that LLMs are just a tool, and just because they *feel* like real humans because they can stream chat to us, doesn’t rule out the dozens of other types of machine learning models and methodologies that may lead to even more intelligent models further in the future. In fact, I almost guarantee this will be the case. I’ve started drafting yet another post that pokes fun at the fact that the current GPT and LLM hype is based on a *single* new invention — the transformer architecture. It goes on to talk about how these LLMs are just a tool that are relatively easy to implement with little engineering effort, but they work damn well and that’s why seemingly every company on the planet is just latching on to this identical concept and racing one another to get one of their own “seems-almost-like-a-human-chatbots”. Humans gon’ be humans… but more in that next post.
-
-## The Signal From Physical Reality is Slow (and Damned Difficult!)
-
-I’ll try to drive the point home in as easy of a method as possible. Let’s take literally any of the crazed ideas I’ve seen from the AGI / singularity maximalists, and then I’ll present in simple terms what science is missing for that outcome to occur. I’ll try to do my best to think of them myself here:
-
-* “They’ll (the robots) kill us all instantly with a nanobot virus that travels around the world even faster than the speed of light!”
-
-Okay, that’s a good one, this one requires:
-
-* faster than speed of light travel (lol)
-
-* virus that instantly kills (we know of no virus that is even close to this behavior)
-
-Or how about:
-
-* “They’ll copy and entrap every human mind in a time-frozen enclosure by cloning all our consciousnesses there!”
-
-This one requires:
-
-* copying / trapping of consciousness (we don’t even understand what consciousness is or how it works)
-
-* stopping of time (sigh… don’t even get me started)
-
-Or one I saw recently on our lovely r/singularity:
-
-* “They’ll own and operate every business on the planet, producing anything and everything for free!”
-
-This one requires:
-
-* infinite energy with no resource usage? I don't even know where to quite begin critiquing this one…
-
-* take over of 100 year+ legacy systems, especially including the internet which produces more than 400 terabytes of data, a system of complexity that even an ASI would struggle with
-
-Their scapegoat here is always to say that the super-intelligent system would just be able to pull things out of literally thin air. My argument is always to question, “How”? And, if it immediately becomes this stupid loop of me asking how, and them saying “Well we can’t know how”, then the conversation is over, I don’t have much more to gain from such a conversation.
-
-Another problem here is that many people conflate intelligence with knowledge. Intelligence could be argued as a way to understand knowledge, while knowledge itself is the actual “data” containing all the details. As far as I know, if we had an agent that immediately had the total sum of all humanitarian knowledge, I still don’t think we would get faster than light travel, or a virus that could kill anything instantly. Guess why? Because these things have nothing to do with humans or AI. They are rooted all in physics.
-
-Instead, I argue by the exact fact that the only argument is “You can’t know how!” applies *directly* to any agent of reality, no matter how intelligent. You need a mechanism of extracting facts and truths from reality. As far as I know, the scientific method (read: experiments and iteration) is a pretty damn good system, (and even conceding that AGI invents some better system), but it’s still gonna be not that fast. As in, no-so-fast-that-multiple-competitors-and-natural-competition-will-arise-as-always-since-its-still-a-part-of-reality-which-is-inherently-complex fast. 
-
-## “How?”
-
-Now, I know the match-up of myself (a writer, business owner, decade+ software engineer, and reader of the staggering amount of at least *gasp* 10 books a year) picking a fight with puny chronically-online-gamer no-school subredditors in r/singularity isn’t really a fair fight, but I’ve seen this AGI maximalist talk nearly *everywhere* on the web, from X to Hackernews to major news outlets. I can’t help but feel there are vast gaps in understanding of the underlying technologies. Okay, I’m being too nice: there *are* vast gaps in understanding of the underlying technologies. I mean, I get the optimism, I’m part of it too, I use some of these tools almost every day, and on top of that, people have made *a lot* of money betting on AI — in terms of the economy and markets, AI has undoubtedly been a gold mine. But there are constraints to what this stuff can do. It’s time to dial down the fantasy world a little bit.
-
-So remember, the next time a singularity / AGI maximalist gets on your nerves, keep asking “How?” until they are forced to realize how lofty and childish their expectations are and are forced to indeed examine, just exactly *how*, these systems will simultaneously break multiple laws of physics.
+With that, the “Counter too large” error was resolved and our example PDF build went through!
 
 ## Thanks!
 
-As always, thanks for reading my stuff and I hope I gave you a few ideas to knock around in your head, or with friends and family.
+I hope this post helped you if you are using both LaTeX and or pandoc and run into the cryptic “Counter too large” error.
+
+Until next time,
 
 -Chris
+
+

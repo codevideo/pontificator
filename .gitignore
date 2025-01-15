@@ -1,9 +1,18 @@
+# node_modules
+node_modules
+
+# coverage
+coverage
+
 # environment
 .env
-
-# virtualenv
-venv
 
 # All artifacts in example folder
 example/*.mp3
 example/*.txt
+
+# TypeScript build artifacts
+dist
+
+# Mac DS store
+.DS_Store

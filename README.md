@@ -1,8 +1,20 @@
-# pontificator
+# @fullstackcraftllc/pontificator
 
 Generate studio quality dictated audio files from books, articles, and blog posts.
 
 See an example of a dictated blog post [on one of Chris's blog posts](https://chrisfrew.in/blog/blazor-on-netlify-with-environment-variables/).
+
+## Install in a Node.js Project
+
+```shell
+npm install @fullstackcraftllc/pontificator
+```
+
+## CLI Usage
+
+```shell
+npx @fullstackcraftllc/pontificator <path-to-file-to-dictate>
+```
 
 ## Prerequisites
 
@@ -14,12 +26,10 @@ If you are fine with using the built in text-to-speech software, you can skip th
 
 ## Installation
 
-Activate your virtual environment and install the required packages:
+Install dependencies:
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+```shell
+npm install
 ```
 
 ## Example
@@ -29,53 +39,12 @@ Paste any markdown into the `example/blog-post.mdx` file. (Or leave as-is for th
 Then, run `pontificator` with the following command:
 
 ```python
-python3 python/pontificator.py example/blog-post.mdx
+npm run start example/blog-post.mdx
 ```
 
 This will clean up the markdown, chunk it for API calls, and combine the audio chunks to a single .mp3 file reflecting the entire text content of the blog post.
 
 If all goes well, you should get an `audio.mp3` file produced in the `example` directory.
-
-## Advanced Options for Connoisseurs
-
-## Conversion Examples
-
-### Blog Post
-
-```python
-python3 python/clean_mdx.py example/blog-post.mdx
-```
-
-`blog-post.txt` should be cleaned and ready to be dictated by any text-to-speech software.
-
-### 'Unit Test' Example
-
-```python
-python3 python/clean_mdx.py example/test.mdx
-```
-
-`test.txt` should be cleaned and ready to be dictated by any text-to-speech software.
-
-
-## Chunking Examples
-
-In order to avoid rate limits and max character limits of text-to-speech software, it is recommended to chunk the text into smaller files.
-
-### Blog Post
-
-```python
-python split_into_chunks.py blog-post.txt
-```
-
-This will result in a variety of files with the naming convention `blog-post-chunk-#.txt` where `#` is the chunk number.
-
-## Generate Audio
-
-### Blog Post
-
-```python
-python generate_audio.py blog-post-chunk-1.txt
-```
 
 ### Validation and Verification
 
