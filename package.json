@@ -3,10 +3,10 @@
     "version": "1.0.0",
     "description": "Generate studio quality dictated audio files from books, articles, and blog posts.",
     "main": "dist/index.js",
-    "type": "module",
     "types": "dist/index.d.ts",
     "scripts": {
         "build": "rollup -c ./rollup.config.js",
+        "build-dev": "tsc",
         "start": "tsc && node dist/pontificator.js",
         "test": "jest",
         "type-check": "tsc --noEmit"

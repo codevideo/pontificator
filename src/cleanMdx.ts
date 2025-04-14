@@ -98,7 +98,14 @@ const removeBadCharacters = (text: string): string => {
     return text
         .replace(/'/g, "'")
         .replace(/"/g, '"')
-        .replace(/"/g, '"');
+        .replace(/"/g, '"')
+        .replace(/…/g, '...');
+}
+
+const soundSpellStrangeWords = (text: string): string => {
+    // expand this replace list as needed
+    return text
+        .replace("HumanEval", "Human E-Val");
 }
 
 export const cleanMdx = (inputFile: string): void => {
@@ -121,6 +128,7 @@ export const cleanMdx = (inputFile: string): void => {
     
     filteredContent = removeLinks(filteredContent);
     filteredContent = removeBadCharacters(filteredContent);
+    filteredContent = soundSpellStrangeWords(filteredContent);
     
     const outputFile = inputFile.replace('.mdx', '.txt');
     fs.writeFileSync(outputFile, filteredContent);

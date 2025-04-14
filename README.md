@@ -4,6 +4,12 @@ Generate studio quality dictated audio files from books, articles, and blog post
 
 See an example of a dictated blog post [on one of Chris's blog posts](https://chrisfrew.in/blog/blazor-on-netlify-with-environment-variables/).
 
+## Run the dev version
+
+```shell
+npm run start example/blog-post.mdx
+```
+
 ## Install in a Node.js Project
 
 ```shell

@@ -53,6 +53,9 @@ export const generateAudio = async (
     fileToChunk: string,
     forceOverwrite: boolean = false
 ): Promise<void> => {
+    // Load environment variables first
+    loadEnvVariables();
+    
     const fileNoExt = fileToChunk.split('.')[0];
 
     // Read the text to speak from the file
@@ -108,8 +111,6 @@ export const generateAudio = async (
         }
     } else {
         // Fallback if no ELEVEN_LABS_API_KEY is found
-        // (In Python we used pyttsx3, but Node has no direct equivalent built-in.)
-        // You could integrate another TTS library here if desired.
         console.log(
             `No ELEVEN_LABS_API_KEY found. Fallback: skipping TTS generation for ${fileNoExt}.`
         );

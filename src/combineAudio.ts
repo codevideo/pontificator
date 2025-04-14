@@ -9,7 +9,19 @@ export const combineAudio = async (absoluteDirPath: string): Promise<boolean> =>
     .readdirSync(absoluteDirPath, { withFileTypes: true })
     .filter((dirent) => dirent.isFile() && dirent.name.endsWith('.mp3'))
     .map((dirent) => dirent.name)
-    .sort();
+    .sort((a, b) => {
+      // Extract chunk numbers using regex
+      const chunkA = a.match(/chunk-(\d+)/);
+      const chunkB = b.match(/chunk-(\d+)/);
+      
+      // If both files have chunk numbers, sort numerically
+      if (chunkA && chunkB) {
+        return parseInt(chunkA[1], 10) - parseInt(chunkB[1], 10);
+      }
+      
+      // Fall back to alphabetical sort if not both are chunk files
+      return a.localeCompare(b);
+    });
 
   if (mp3Files.length === 0) {
     console.log(`No MP3 files found in ${absoluteDirPath}`);
